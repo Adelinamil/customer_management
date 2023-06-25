@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  backend:
+    restart: always
+    container_name: "cm_backend"
+    image: cm_backend
+    environment:
+      - PG_HOST=db:5432
+      - PG_USERNAME=postgres
+      - PG_PASSWORD=postgres
+      - PG_DATABASE=postgres
+      - SECRET_KEY=dc98355c8ea7873e514e4590136b6a1496ce4b7800c91d59330f65acdfe38e1f
+    build:
+      context: ./customer_management_backend
+    command: /bin/sh -c "/app/backend.sh"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - custom
+
+  frontend:
+    restart: always
+    container_name: "cm_frontend"
+    image: cm_frontend
+    build:
+      context: ./customer_management_frontend
+      args:
+        REACT_APP_API_URL: http://127.0.0.1:8000/api/v1
+    ports:
+      - "3000:80"
+  db:
+    container_name: "db"
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - custom
+
+networks:
+  custom:
+    driver: bridge
